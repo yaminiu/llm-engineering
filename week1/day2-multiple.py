@@ -1,182 +1,254 @@
+
 #!/usr/bin/env python3
 import os
-import sys
+import json
 import time
-import logging
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, Optional
+from urllib.parse import urlencode
+import requests
 from openai import OpenAI
-from openai import OpenAIError, APIError, RateLimitError, AuthenticationError, BadRequestError, APIConnectionError
 
-"""
-Multi-turn chat with robust error handling:
-- Validates environment and model
-- Retries with exponential backoff on transient failures
-- Handles server offline, bad model, auth, and JSON parsing
-- Optional streaming with safe consumption
-"""
+# -----------------------------
+# Config (env overrides)
+# -----------------------------
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1")
+OLLAMA_API_KEY = os.getenv("OLLAMA_API_KEY", "ollama")
 
-# ---------- Configure logging ----------
-logging.basicConfig(
-    level=os.getenv("LOG_LEVEL", "INFO"),
-    format="%(asctime)s %(levelname)s %(message)s",
+PROM_QUERY_URL = os.getenv("PROM_QUERY_URL", "https://localhost:9090/query")
+# Optionally: /api/v1/query or /api/v1/query_range; you provided /query, so we'll use instant query semantics.
+PROM_AUTH_HEADER = os.getenv("PROM_AUTH_HEADER")  # e.g. "Bearer <token>"
+PROM_BASIC_USER = os.getenv("PROM_BASIC_USER")
+PROM_BASIC_PASS = os.getenv("PROM_BASIC_PASS")
+
+CONNECT_STATUS_URL = os.getenv(
+    "CONNECT_STATUS_URL",
+    "https://dyn-rc-biabkafka02.biab.au.ing.net:9083/connectors/application-debezium-connector/status",
 )
 
-# ---------- Constants ----------
-BASE_URL = os.getenv("LLAMA_API_URL", "http://localhost:11434/v1")
-API_KEY = os.getenv("LLAMA_API_KEY", "ollama")   # Any string is fine for Ollama
-MODEL = os.getenv("LLAMA_MODEL", "gemma3:latest")
-MAX_TOKENS = int(os.getenv("MAX_TOKENS", "400"))
-TEMPERATURE = float(os.getenv("TEMPERATURE", "0.4"))
-RETRY_ATTEMPTS = int(os.getenv("RETRY_ATTEMPTS", "3"))
-INITIAL_BACKOFF = float(os.getenv("INITIAL_BACKOFF", "0.5"))
-BACKOFF_MULTIPLIER = float(os.getenv("BACKOFF_MULTIPLIER", "2.0"))
+VERIFY_TLS = os.getenv("VERIFY_TLS", "true").lower() == "true"
+HTTP_TIMEOUT = float(os.getenv("HTTP_TIMEOUT", "30"))
 
-# ---------- Utilities ----------
-def retryable_chat_completion(
-    client: OpenAI,
-    messages: List[Dict[str, Any]],
-    model: str,
-    temperature: float,
-    max_tokens: int,
-    stream: bool = False,
-) -> Optional[Any]:
-    """
-    Retry wrapper for chat completions, with exponential backoff for transient failures.
-    Returns:
-        - If stream=False: the response object
-        - If stream=True: the stream context manager (caller iterates safely)
-    """
-    backoff = INITIAL_BACKOFF
-    for attempt in range(1, RETRY_ATTEMPTS + 1):
-        try:
-            if stream:
-                # Return the stream context; caller must use 'with' and iterate safely
-                return client.chat.completions.stream(
-                    model=model,
-                    messages=messages,
-                    temperature=temperature,
-                    max_tokens=max_tokens,
-                )
-            else:
-                return client.chat.completions.create(
-                    model=model,
-                    messages=messages,
-                    temperature=temperature,
-                    max_tokens=max_tokens,
-                )
-        except (APIConnectionError, APIError) as e:
-            # Transient or server-side errors → retry
-            logging.warning(f"[Attempt {attempt}/{RETRY_ATTEMPTS}] API/server error: {e}")
-        except RateLimitError as e:
-            logging.warning(f"[Attempt {attempt}/{RETRY_ATTEMPTS}] Rate limited: {e}")
-        except TimeoutError as e:
-            logging.warning(f"[Attempt {attempt}/{RETRY_ATTEMPTS}] Timeout: {e}")
-        except (AuthenticationError, BadRequestError, OpenAIError) as e:
-            # Non-retryable (likely misconfiguration, bad model name, etc.)
-            logging.error(f"Non-retryable error: {e}")
-            break
+MODEL = os.getenv("OLLAMA_MODEL", "llama3.2:latest")
+TEMPERATURE = float(os.getenv("TEMPERATURE", "0.2"))
 
-        if attempt < RETRY_ATTEMPTS:
-            time.sleep(backoff)
-            backoff *= BACKOFF_MULTIPLIER
+# -----------------------------
+# OpenAI client -> Ollama /v1
+# -----------------------------
+client = OpenAI(base_url=OLLAMA_BASE_URL, api_key=OLLAMA_API_KEY)
 
+# -----------------------------
+# Tools (JSON Schema)
+# -----------------------------
+tools = [
+    {
+        "type": "function",
+        "function": {
+            "name": "query_prometheus",
+            "description": (
+                "Run a PromQL instant query against Prometheus and return the latest value(s). "
+                "Use when you need metrics such as error rate, lag, throughput."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "PromQL query string"},
+                    "time": {
+                        "type": "string",
+                        "description": "Optional RFC3339 or unix ts for evaluation time"
+                    },
+                },
+                "required": ["query"],
+                "additionalProperties": False,
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_connector_status",
+            "description": (
+                "Fetch Kafka Connect connector status (state and per-task states) "
+                "from the Connect REST API."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "description": "Override status URL. Defaults to configured CONNECT_STATUS_URL.",
+                    }
+                },
+                "additionalProperties": False,
+            },
+        },
+    },
+]
+
+# -----------------------------
+# Real tool handlers (HTTPS)
+# -----------------------------
+def _prom_headers() -> Dict[str, str]:
+    h = {}
+    if PROM_AUTH_HEADER:
+        h["Authorization"] = PROM_AUTH_HEADER
+    return h
+
+def _prom_auth():
+    if PROM_BASIC_USER and PROM_BASIC_PASS:
+        return (PROM_BASIC_USER, PROM_BASIC_PASS)
     return None
 
-def ensure_env():
-    if not BASE_URL.startswith("http"):
-        raise ValueError(f"Invalid LLAMA_API_URL: {BASE_URL}")
-    if not MODEL:
-        raise ValueError("LLAMA_MODEL is empty")
-    logging.info(f"Using base_url={BASE_URL}, model={MODEL}")
+def handle_query_prometheus(args: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Calls your Prometheus endpoint (instant query).
+    You provided: https://localhost:9090/query
 
-def run_multi_turn(stream: bool = False):
-    ensure_env()
+    If your Prometheus expects /api/v1/query, set PROM_QUERY_URL accordingly.
+    """
+    query = args["query"]
+    t = args.get("time")  # optional
+    params = {"query": query}
+    if t:
+        params["time"] = t
 
-    # Initialize client pointing to Ollama’s OpenAI-compatible API
-    client = OpenAI(base_url=BASE_URL, api_key=API_KEY)
-
-    # Conversation state
-    messages: List[Dict[str, Any]] = [
-        {"role": "system", "content": "You are a concise, helpful assistant for a Senior kafka Engineer."},
-        {"role": "user", "content": "Summarize blue/green vs canary deployments."}
-    ]
-
-    # --- Turn 1 ---
-    resp1 = retryable_chat_completion(
-        client, messages, MODEL, TEMPERATURE, MAX_TOKENS, stream=False
-    )
-    if resp1 is None:
-        # Fallback if server unreachable or persistent failure
-        logging.error("Failed to get response for Turn 1; falling back to local message.")
-        assistant_1 = "Fallback: cp-ansible deploy confluent platform to VMs, CFK deploy Conflyent platform on Kubenetes."
-    else:
-        try:
-            assistant_1 = resp1.choices[0].message.content
-        except Exception as e:
-            logging.error(f"Response parsing error (Turn 1): {e}")
-            assistant_1 = "Parsing error fallback: cons and pros of each deployment."
-    print("\nAssistant (Turn 1):\n", assistant_1)
-    messages.append({"role": "assistant", "content": assistant_1})
-
-    # --- Turn 2 ---
-    messages.append({"role": "user", "content": "Which approach fits a startup company to start from scratch and why?"})
-    resp2 = retryable_chat_completion(
-        client, messages, MODEL, TEMPERATURE, MAX_TOKENS, stream=False
-    )
-    if resp2 is None:
-        logging.error("Failed to get response for Turn 2; using fallback.")
-        assistant_2 = "Fallback: kafka is statefulset, is kubenet teh better choice."
-    else:
-        try:
-            assistant_2 = resp2.choices[0].message.content
-        except Exception as e:
-            logging.error(f"Response parsing error (Turn 2): {e}")
-            assistant_2 = "Parsing error fallback: Prefer cp-ansible for more stable service."
-    print("\nAssistant (Turn 2):\n", assistant_2)
-    messages.append({"role": "assistant", "content": assistant_2})
-
-    # --- Turn 3 with streaming (optional) ---
-    messages.append({"role": "user", "content": "Give a 6-step checklist deploy confluent platform using cp-ansible."})
-    if stream:
-        try:
-            with retryable_chat_completion(
-                client, messages, MODEL, TEMPERATURE, MAX_TOKENS, stream=True
-            ) as stream_ctx:
-                if stream_ctx is None:
-                    raise RuntimeError("Streaming not available.")
-                print("\nAssistant (Turn 3 - Streaming):\n")
-                for event in stream_ctx:
-                    # Guard for token events; ignore other events such as 'error' or 'complete'
-                    if getattr(event, "type", None) == "token":
-                        print(event.token, end="", flush=True)
-                print("\n\n[Done]")
-        except Exception as e:
-            logging.error(f"Streaming error (Turn 3): {e}")
-            print("\nFallback checklist:\n1) Version new deployment\n2) Label workloads\n3) Configure VirtualService/DR\n4) Route small traffic\n5) Observe SLOs\n6) Promote or rollback")
-    else:
-        resp3 = retryable_chat_completion(
-            client, messages, MODEL, TEMPERATURE, MAX_TOKENS, stream=False
+    url = PROM_QUERY_URL
+    # If your endpoint is actually /api/v1/query, you can just set PROM_QUERY_URL to that.
+    # Otherwise we compose query string here:
+    try:
+        r = requests.get(
+            url,
+            params=params,
+            headers=_prom_headers(),
+            auth=_prom_auth(),
+            timeout=HTTP_TIMEOUT,
+            verify=VERIFY_TLS,
         )
-        if resp3 is None:
-            logging.error("Failed to get response for Turn 3; using fallback.")
-            assistant_3 = (
-                "Fallback checklist:\n"
-                "1) Deploy new version alongside stable\n"
-                "2) Configure Istio VirtualService/DestinationRule\n"
-                "3) Start with 1–5% traffic to canary\n"
-                "4) Monitor latency, errors, saturation\n"
-                "5) Gradually increase traffic\n"
-                "6) Promote canary or rollback"
-            )
-        else:
-            try:
-                assistant_3 = resp3.choices[0].message.content
-            except Exception as e:
-                logging.error(f"Response parsing error (Turn 3): {e}")
-                assistant_3 = "Parsing error fallback: progressive traffic, metrics, promotion/rollback."
-        print("\nAssistant (Turn 3):\n", assistant_3)
+        r.raise_for_status()
+        data = r.json()
+        # Normalize a minimal, predictable shape for the model:
+        return {
+            "endpoint": url,
+            "params": params,
+            "status": data.get("status"),
+            "resultType": data.get("data", {}).get("resultType"),
+            "result": data.get("data", {}).get("result"),
+        }
+    except Exception as e:
+        return {
+            "endpoint": url,
+            "params": params,
+            "error": str(e),
+        }
 
-if __name__ == "__main__":
-    # CLI: python script.py [--stream]
-    use_stream = "--stream" in sys.argv
-    run_multi_turn(use_stream)
+def handle_get_connector_status(args: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Calls your Kafka Connect status endpoint.
+    Default: the URL you provided (single connector).
+    """
+    url = args.get("url") or CONNECT_STATUS_URL
+    try:
+        r = requests.get(url, timeout=HTTP_TIMEOUT, verify=VERIFY_TLS)
+        r.raise_for_status()
+        data = r.json()
+        # Return compact, model-friendly fields:
+        return {
+            "endpoint": url,
+            "name": data.get("name"),
+            "connector": data.get("connector", {}),
+            "tasks": data.get("tasks", []),
+            # Some Connects include "type", "trace", 'status' fields; pass through:
+            "raw": data,
+        }
+    except Exception as e:
+        return {
+            "endpoint": url,
+            "error": str(e),
+        }
+
+tool_handlers = {
+    "query_prometheus": handle_query_prometheus,
+    "get_connector_status": handle_get_connector_status,
+}
+
+# -----------------------------
+# System context tailored to your stack
+# -----------------------------
+SYSTEM_CTX = (
+    "You are a concise Kafka/DevOps assistant. Environment: Confluent Platform with Kafka Connect "
+    "using Debezium source connectors. Metrics are exposed via JMX, collected by jmx_prometheus_javaagent, "
+    "scraped by Prometheus, and visualized with Grafana. Prefer owner-facing recommendations "
+    "(connector-level) with PromQL, thresholds, severity, and runbook steps. "
+    "Call tools when you need live metrics or connector status."
+)
+
+# -----------------------------
+# Conversation seed
+# -----------------------------
+messages = [
+    {"role": "system", "content": SYSTEM_CTX},
+    {"role": "user", "content": (
+        "For connector 'application-debezium-connector', "
+        "check its current status, query the 5m error rate and current consumer lag from Prometheus, "
+        "then recommend actionable alerts (thresholds, severity) and dashboard panels. "
+        "Use the available tools as needed."
+    )},
+]
+
+# -----------------------------
+# 1) First turn - let the model decide tool usage
+# -----------------------------
+first = client.chat.completions.create(
+    model=MODEL,
+    messages=messages,
+    tools=tools,
+    tool_choice="auto",
+    temperature=TEMPERATURE,
+)
+
+choice = first.choices[0]
+assistant_msg = choice.message
+messages.append({"role": "assistant", "content": assistant_msg.content or ""})
+
+# Satisfy tool calls (if any)
+if assistant_msg.tool_calls:
+    for tc in assistant_msg.tool_calls:
+        name = tc.function.name
+        args = json.loads(tc.function.arguments or "{}")
+        handler = tool_handlers.get(name)
+        if not handler:
+            tool_content = json.dumps({"error": f"Unknown tool '{name}'"})
+        else:
+            result = handler(args)
+            tool_content = json.dumps(result)
+
+        messages.append({
+            "role": "tool",
+            "tool_call_id": tc.id,
+            "content": tool_content,
+        })
+
+# -----------------------------
+# 2) Final turn - streamed synthesis
+# -----------------------------
+stream = client.chat.completions.create(
+    model=MODEL,
+    messages=messages,
+    tools=tools,            # keep available in case the model needs one more call
+    tool_choice="auto",
+    temperature=TEMPERATURE,
+    stream=True,
+)
+
+buf = []
+try:
+    for chunk in stream:
+        delta = chunk.choices[0].delta
+        token = getattr(delta, "content", "")
+        if token:
+            buf.append(token)
+            print(token, end="", flush=True)
+finally:
+    print("\n")
+
+# Persist assistant reply to history (if you plan another turn)
+final_answer = "".join(buf).strip()

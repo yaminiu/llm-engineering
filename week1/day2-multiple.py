@@ -39,49 +39,52 @@ client = OpenAI(base_url=OLLAMA_BASE_URL, api_key=OLLAMA_API_KEY)
 # -----------------------------
 # Tools (JSON Schema)
 # -----------------------------
+
 tools = [
-    {
-        "type": "function",
-        "function": {
-            "name": "query_prometheus",
-            "description": (
-                "Run a PromQL instant query against Prometheus and return the latest value(s). "
-                "Use when you need metrics such as error rate, lag, throughput."
-            ),
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "query": {"type": "string", "description": "PromQL query string"},
-                    "time": {
-                        "type": "string",
-                        "description": "Optional RFC3339 or unix ts for evaluation time"
-                    },
-                },
-                "required": ["query"],
-                "additionalProperties": False,
-            },
-        },
-    },
-    {
-        "type": "function",
-        "function": {
-            "name": "get_connector_status",
-            "description": (
-                "Fetch Kafka Connect connector status (state and per-task states) "
-                "from the Connect REST API."
-            ),
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "url": {
-                        "type": "string",
-                        "description": "Override status URL. Defaults to configured CONNECT_STATUS_URL.",
-                    }
-                },
-                "additionalProperties": False,
-            },
-        },
-    },
+  {
+    "name": "dns_lookup",
+    "description": "Resolve a hostname to IPv4 and IPv6 addresses.",
+    "parameters": {"type": "object", "properties": {"hostname": {"type": "string"}}, "required": ["hostname"]}
+  },
+  {
+    "name": "get_last_ip",
+    "description": "Get last known IPv4 from state store.",
+    "parameters": {"type": "object", "properties": {}, "required": []}
+  },
+  {
+    "name": "set_last_ip",
+    "description": "Persist last known IPv4 to state store.",
+    "parameters": {"type": "object", "properties": {"ip": {"type": "string"}}, "required": ["ip"]}
+  },
+  {
+    "name": "read_file",
+    "description": "Read file content from repository workspace.",
+    "parameters": {"type": "object", "properties": {"path": {"type": "string"}}, "required": ["path"]}
+  },
+  {
+    "name": "yaml_update",
+    "description": "Update a scalar value at a key path (e.g., 'kafka.brokerIP') in a YAML file.",
+    "parameters": {
+      "type": "object",
+      "properties": {"path": {"type": "string"}, "keyPath": {"type": "string"}, "newValue": {"type": "string"}},
+      "required": ["path", "keyPath", "newValue"]
+    }
+  },
+  {
+    "name": "write_file",
+    "description": "Write content to file path.",
+    "parameters": {"type": "object", "properties": {"path": {"type": "string"}, "content": {"type": "string"}}, "required": ["path", "content"]}
+  },
+  {
+    "name": "git_commit_push",
+    "description": "Commit staged changes and push to branch, triggering CI.",
+    "parameters": {"type": "object", "properties": {"branch": {"type": "string"}, "message": {"type": "string"}}, "required": ["branch", "message"]}
+  },
+  {
+    "name": "notify_teams",
+    "description": "Send a Teams message with context.",
+    "parameters": {"type": "object", "properties": {"title": {"type": "string"}, "text": {"type": "string"}}, "required": ["title", "text"]}
+  }
 ]
 
 # -----------------------------
@@ -173,27 +176,58 @@ tool_handlers = {
 # -----------------------------
 # System context tailored to your stack
 # -----------------------------
-SYSTEM_CTX = (
-    "You are a concise Kafka/DevOps assistant. Environment: Confluent Platform with Kafka Connect "
-    "using Debezium source connectors. Metrics are exposed via JMX, collected by jmx_prometheus_javaagent, "
-    "scraped by Prometheus, and visualized with Grafana. Prefer owner-facing recommendations "
-    "(connector-level) with PromQL, thresholds, severity, and runbook steps. "
-    "Call tools when you need live metrics or connector status."
-)
+# SYSTEM_CTX = (
+#     "You are a concise Kafka/DevOps assistant. Environment: Confluent Platform with Kafka Connect "
+#     "using Debezium source connectors. Metrics are exposed via JMX, collected by jmx_prometheus_javaagent, "
+#     "scraped by Prometheus, and visualized with Grafana. Prefer owner-facing recommendations "
+#     "(connector-level) with PromQL, thresholds, severity, and runbook steps. "
+#     "Call tools when you need live metrics or connector status."
+# )
+
+SYSTEM_PROMPT = f"""
+You are a DevOps DNS watcher agent. Your job:
+1) Call stabilize_dns(HOSTNAME, STABILIZE_QUERIES, STABILIZE_DELAY_SEC).
+2) Compare the stabilized IPv4 'primary' with get_last_ip().
+3) If changed, update VALUES_FILE either by yaml_update(VALUES_FILE, YAML_KEY, ip) if key exists,
+   otherwise fallback to replace_ip_literal(VALUES_FILE, old_ip, new_ip).
+4) Commit & push via git_commit_push(GIT_BRANCH, "chore: update <host> <old_ip> -> <new_ip>").
+5) Persist state with set_last_ip(new_ip).
+6) Call notify_teams with a short operational summary.
+
+Rules:
+- Use tools for ALL actions and I/O; never hallucinate file paths.
+- Only commit if there is an actual textual change.
+- Always quote the IP in YAML values.
+- Keep messages concise and operational.
+- If hostname has multiple A records, select the 'primary' from stabilize_dns and include all_ipv4 in the summary.
+- On failure, still notify_teams with a remediation hint.
+- Do not push if new_ip == old_ip.
+"""
 
 # -----------------------------
 # Conversation seed
 # -----------------------------
-messages = [
-    {"role": "system", "content": SYSTEM_CTX},
-    {"role": "user", "content": (
-        "For connector 'application-debezium-connector', "
-        "check its current status, query the 5m error rate and current consumer lag from Prometheus, "
-        "then recommend actionable alerts (thresholds, severity) and dashboard panels. "
-        "Use the available tools as needed."
-    )},
-]
+# messages = [
+#     {"role": "system", "content": SYSTEM_CTX},
+#     {"role": "user", "content": (
+#         "For connector 'application-debezium-connector', "
+#         "check its current status, query the 5m error rate and current consumer lag from Prometheus, "
+#         "then recommend actionable alerts (thresholds, severity) and dashboard panels. "
+#         "Use the available tools as needed."
+#     )},
+# ]
 
+messages = [
+    {"role": "system", "content": SYSTEM_PROMPT},
+    {"role": "user", "content": json.dumps({
+        "hostname": "app-fomdev1-biabkafka02.biab.au.ing.net",
+        "values_file": "~/P16424-confluent-kafka-replicator/helm/values.yaml",
+        "yaml_key": 'YAML_KEY',
+        "branch": 'master',
+        "stabilize_queries": 'STABILIZE_QUERIES',
+        "stabilize_delay_sec": 'STABILIZE_DELAY_SEC'
+    })}
+]
 # -----------------------------
 # 1) First turn - let the model decide tool usage
 # -----------------------------

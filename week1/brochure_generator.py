@@ -75,7 +75,7 @@ class ScrapeConfig:
 class LLMConfig:
     base_url: str = DEFAULT_BASE_URL
     model: str = DEFAULT_MODEL
-    brochure_word_target: int = 500
+    brochure_word_target: int = 1000
 
 
 # -----------------------------

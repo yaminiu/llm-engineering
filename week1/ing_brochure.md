@@ -1,44 +1,42 @@
-Okay, here's a breakdown of the information extracted from the provided text, categorized for clarity:
+Okay, here's a breakdown of the information presented in the provided text, categorized for clarity and highlighting key features:
 
-**I. Core Products & Services:**
+**I. Core Banking Products & Services (ING)**
 
-*   **Banking & Savings:**
+*   **Banking:** Provides everyday banking services including:
     *   Orange Everyday Bank Account
-    *   Savings Maximiser
     *   Personal Savings Accounts
     *   Business Savings Accounts
-    *   Term Deposits
-*   **Insurance Products:**
-    *   **Car Insurance:**
-        *   Comprehensive Car Insurance
-        *   Third-Party Property Only
-        *   Third-Party Property, Fire & Theft
-    *   **Home & Contents Insurance:** (Combined & Separate Options)
-    *   **Pet Insurance:** One Level of Affordable Coverage
-    *   **Motorcycle Insurance**
+*   **Credit Cards:** Offers various credit card options (Orange One Low Rate, Orange One Rewards Platinum)
+*   **Personal Loans:**  Unsecured personal loans with low rates and no early repayment fees.
+*   **Home Loans:**
+    *   Mortgage Simplifier (low rates, no fees)
+    *   Fixed Rate Loans
+    *   Green Upgrade Loan (for energy efficiency)
 
-**II. Key Features & Benefits (Promotional):**
+**II. Insurance Products (ING Insurance)**
 
-*   **Discount Offers:**
-    *   30% off Home & Contents Insurance (on first year, new policy, combined or separate)
-    *   15% off Car, Pet, & Motorcycle Insurance (on first year, new policy)
-*   **Hassle-Free Claims:** Dedicated claims team support.
-*   **Flexible Cover Options:**  Multiple tiers of coverage available (e.g., different Home & Contents levels, Pet insurance).
+* **Car Insurance:** Offerd three cover options:
+    * Comprehensive car insurance
+    * Third-Party Property Only
+    * Third Party Property, Fire & Theft
+* **Home & Contents Insurance:**
+     * 30% off when purchasing a new policy online
+     * Combined Home and Contents, 15% for Home only or Contents only
+* **Pet Insurance:**
+     * 15% off when purchasing a new policy online
+* **Motorcycle Insurance:**
+     * 15% off when purchasing a new policy online
 
-**III.  Important Details & Considerations:**
+**III. Key Features & Value Propositions**
 
-*   **Terms & Conditions:**  (Repeated emphasis) -  Highlights that all products have limitations, exclusions, waiting periods, and excesses that must be considered.
-*   **BSB:** 923-100 (Bank’s BSB)
+*   **Hassle-Free Claims:**  Dedicated claims team support.
+*   **Competitive Rates:**  Highlights low rates for loans and mortgages.
+*   **Flexibility:** Offers a range of cover options to suit individual needs.
+* **Discount Offers:** 30% off combined Home & Contents, or 15% off Car, Pet or Motorcycle insurance when purchasing a new policy online.
 
-**IV.  Website Links (Implied):**
+**IV.  Important Disclaimers (Repeated)**
 
-*   [https://www.ing.com.au/insurance.html](https://www.ing.com.au/insurance.html) –  This is the primary link for insurance information and quote requests.
-*   [https://www.ing.com.au/](https://www.ing.com.au/) – The main ING website.
-
+* Several disclaimers were present regarding terms and conditions, limits, exclusions, waiting periods, and excesses, indicating the need to refer to the Product Disclosure Statement and Policy Booklet.
 
 
-**Would you like me to:**
-
-*   Extract specific details about a particular product (e.g., the features of Comprehensive Car Insurance)?
-*   Compare the features of different products?
-*   Summarize the key selling points of ING insurance?
+**If you’d like me to extract specific information or answer a question about the material, just let me know!**

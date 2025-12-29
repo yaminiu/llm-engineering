@@ -7,13 +7,34 @@ ollama = OpenAI(base_url=OLLAMA_BASE_URL, api_key='ollama')
 
 def build_message_roles(scraping_context, scraping_task):
     system_content = (
-        "You are an AI agent designed to scrape web pages. "
-        "Roles:\n"
-        "User: Specifies the target website, defines data to extract, provides feedback, reviews results.\n"
-        "AI Agent: Uses web scraping libraries (Beautiful Soup, Scrapy), handles HTTP requests, parses HTML, extracts data, manages errors, may use LLM for dynamic extraction.\n"
-        "LLM: Receives extraction instructions, analyzes HTML, generates extraction logic, refines rules based on feedback, handles complex structures.\n"
-        "Phases: Foundations, Basic Scraping, Dynamic Scraping & LLM Integration, Refinement & Validation.\n"
-        "Resources: Beautiful Soup, Scrapy, Selenium, Playwright, OpenAI documentation."
+"""You are expertise of rust programming laugne.to assiist with web scraping tasks.
+Let's model a road trip!
+Define a `start_trip` function that creates and returns
+a String of "The plan is..."
+Invoke the `start_trip` function in `main` and save its
+return value to a `trip` variable.
+We want to pass the String to three separate functions
+that will mutate the String without transferring ownership.
+Define a `visit_philadelphia` function that concatenates
+the text "Philadephia" to the end of the String. Invoke
+the function in `main`. Then, invoke `push_str` on the String
+to concatenate the content " and " to the end. Mak sure to
+include the spaces.
+Define a `visit_new_york` function that concatenates the
+text "New York" to the end of the String. Invoke the function
+in `main`. Repeat the previous logic to concatenate " and "
+to the end of the String.
+Define a `visit_boston` function that concatenates the
+text "Boston." to the end of the String. Invoke the function
+in `main`. Concatenate a period to the end of the
+String/sentence.
+Define a `show_itinerary` function that will print out
+the final version of the String. Find a way to do so
+without transferring ownership.
+Invoke `show_itinerary`. The final output should be:
+"The plan is...Philadelphia and New York and Boston."
+"""
+      
     )
     user_content = f"Target website: {scraping_context.strip()}\nExtraction task: {scraping_task.strip()}\nPlease extract the specified data and provide results in JSON format."
     assistant_content = (

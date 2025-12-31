@@ -1,0 +1,64 @@
+<html><head>
+<title>milvus.py</title>
+<meta name="Generator" content="htmlizer/[Twisted, version 24.3.0]" />
+<link rel="alternate" href="milvus.py" type="text/x-python" />
+
+</head>
+<body>
+<pre><span class="py-src-variable">from</span> <span class="py-src-variable">pymilvus</span> <span class="py-src-variable">import</span> <span class="py-src-variable">MilvusClient</span>
+<span class="py-src-variable">import</span> <span class="py-src-variable">random</span>
+
+<span class="py-src-variable">client</span> = <span class="py-src-variable">MilvusClient</span>(
+        <span class="py-src-variable">uri</span>=<span class="py-src-string">&quot;http://127.0.0.1:8080&quot;</span>,
+    )
+
+<span class="py-src-variable">client</span>.<span class="py-src-variable">create_collection</span>(<span class="py-src-variable">collection_name</span>=<span class="py-src-string">&quot;quick_setup&quot;</span>, <span class="py-src-variable">dimension</span>=<span class="py-src-number">5</span>)
+
+<span class="py-src-variable">data</span>=[
+    {<span class="py-src-string">&quot;id&quot;</span>: <span class="py-src-number">0</span>, <span class="py-src-string">&quot;vector&quot;</span>: [<span class="py-src-number">0.3580376395471989</span>, -<span class="py-src-number">0.6023495712049978</span>, <span class="py-src-number">0.18414012509913835</span>, -<span class="py-src-number">0.26286205330961354</span>, <span class="py-src-number">0.9029438446296592</span>], <span class="py-src-string">&quot;color&quot;</span>: <span class="py-src-string">&quot;pink_8682&quot;</span>},
+    {<span class="py-src-string">&quot;id&quot;</span>: <span class="py-src-number">1</span>, <span class="py-src-string">&quot;vector&quot;</span>: [<span class="py-src-number">0.19886812562848388</span>, <span class="py-src-number">0.06023560599112088</span>, <span class="py-src-number">0.6976963061752597</span>, <span class="py-src-number">0.2614474506242501</span>, <span class="py-src-number">0.838729485096104</span>], <span class="py-src-string">&quot;color&quot;</span>: <span class="py-src-string">&quot;red_7025&quot;</span>},
+    {<span class="py-src-string">&quot;id&quot;</span>: <span class="py-src-number">2</span>, <span class="py-src-string">&quot;vector&quot;</span>: [<span class="py-src-number">0.43742130801983836</span>, -<span class="py-src-number">0.5597502546264526</span>, <span class="py-src-number">0.6457887650909682</span>, <span class="py-src-number">0.7894058910881185</span>, <span class="py-src-number">0.20785793220625592</span>], <span class="py-src-string">&quot;color&quot;</span>: <span class="py-src-string">&quot;orange_6781&quot;</span>},
+    {<span class="py-src-string">&quot;id&quot;</span>: <span class="py-src-number">3</span>, <span class="py-src-string">&quot;vector&quot;</span>: [<span class="py-src-number">0.3172005263489739</span>, <span class="py-src-number">0.9719044792798428</span>, -<span class="py-src-number">0.36981146090600725</span>, -<span class="py-src-number">0.4860894583077995</span>, <span class="py-src-number">0.95791889146345</span>], <span class="py-src-string">&quot;color&quot;</span>: <span class="py-src-string">&quot;pink_9298&quot;</span>},
+    {<span class="py-src-string">&quot;id&quot;</span>: <span class="py-src-number">4</span>, <span class="py-src-string">&quot;vector&quot;</span>: [<span class="py-src-number">0.4452349528804562</span>, -<span class="py-src-number">0.8757026943054742</span>, <span class="py-src-number">0.8220779437047674</span>, <span class="py-src-number">0.46406290649483184</span>, <span class="py-src-number">0.30337481143159106</span>], <span class="py-src-string">&quot;color&quot;</span>: <span class="py-src-string">&quot;red_4794&quot;</span>},
+    {<span class="py-src-string">&quot;id&quot;</span>: <span class="py-src-number">5</span>, <span class="py-src-string">&quot;vector&quot;</span>: [<span class="py-src-number">0.985825131989184</span>, -<span class="py-src-number">0.8144651566660419</span>, <span class="py-src-number">0.6299267002202009</span>, <span class="py-src-number">0.1206906911183383</span>, -<span class="py-src-number">0.1446277761879955</span>], <span class="py-src-string">&quot;color&quot;</span>: <span class="py-src-string">&quot;yellow_4222&quot;</span>},
+    {<span class="py-src-string">&quot;id&quot;</span>: <span class="py-src-number">6</span>, <span class="py-src-string">&quot;vector&quot;</span>: [<span class="py-src-number">0.8371977790571115</span>, -<span class="py-src-number">0.015764369584852833</span>, -<span class="py-src-number">0.31062937026679327</span>, -<span class="py-src-number">0.562666951622192</span>, -<span class="py-src-number">0.8984947637863987</span>], <span class="py-src-string">&quot;color&quot;</span>: <span class="py-src-string">&quot;red_9392&quot;</span>},
+    {<span class="py-src-string">&quot;id&quot;</span>: <span class="py-src-number">7</span>, <span class="py-src-string">&quot;vector&quot;</span>: [-<span class="py-src-number">0.33445148015177995</span>, -<span class="py-src-number">0.2567135004164067</span>, <span class="py-src-number">0.8987539745369246</span>, <span class="py-src-number">0.9402995886420709</span>, <span class="py-src-number">0.5378064918413052</span>], <span class="py-src-string">&quot;color&quot;</span>: <span class="py-src-string">&quot;grey_8510&quot;</span>},
+    {<span class="py-src-string">&quot;id&quot;</span>: <span class="py-src-number">8</span>, <span class="py-src-string">&quot;vector&quot;</span>: [<span class="py-src-number">0.39524717779832685</span>, <span class="py-src-number">0.4000257286739164</span>, -<span class="py-src-number">0.5890507376891594</span>, -<span class="py-src-number">0.8650502298996872</span>, -<span class="py-src-number">0.6140360785406336</span>], <span class="py-src-string">&quot;color&quot;</span>: <span class="py-src-string">&quot;white_9381&quot;</span>},
+    {<span class="py-src-string">&quot;id&quot;</span>: <span class="py-src-number">9</span>, <span class="py-src-string">&quot;vector&quot;</span>: [<span class="py-src-number">0.5718280481994695</span>, <span class="py-src-number">0.24070317428066512</span>, -<span class="py-src-number">0.3737913482606834</span>, -<span class="py-src-number">0.06726932177492717</span>, -<span class="py-src-number">0.6980531615588608</span>], <span class="py-src-string">&quot;color&quot;</span>: <span class="py-src-string">&quot;purple_4976&quot;</span>}
+]
+
+<span class="py-src-variable">res</span> = <span class="py-src-variable">client</span>.<span class="py-src-variable">insert</span>(
+    <span class="py-src-variable">collection_name</span>=<span class="py-src-string">&quot;quick_setup&quot;</span>,
+    <span class="py-src-variable">data</span>=<span class="py-src-variable">data</span>
+)
+
+<span class="py-src-variable">print</span>(<span class="py-src-variable">res</span>)
+
+<span class="py-src-variable">colors</span> = [<span class="py-src-string">&quot;green&quot;</span>, <span class="py-src-string">&quot;blue&quot;</span>, <span class="py-src-string">&quot;yellow&quot;</span>, <span class="py-src-string">&quot;red&quot;</span>, <span class="py-src-string">&quot;black&quot;</span>, <span class="py-src-string">&quot;white&quot;</span>, <span class="py-src-string">&quot;purple&quot;</span>, <span class="py-src-string">&quot;pink&quot;</span>, <span class="py-src-string">&quot;orange&quot;</span>, <span class="py-src-string">&quot;brown&quot;</span>, <span class="py-src-string">&quot;grey&quot;</span>]
+<span class="py-src-variable">data</span> = [ {
+    <span class="py-src-string">&quot;id&quot;</span>: <span class="py-src-variable">i</span>, 
+    <span class="py-src-string">&quot;vector&quot;</span>: [ <span class="py-src-variable">random</span>.<span class="py-src-variable">uniform</span>(-<span class="py-src-number">1</span>, <span class="py-src-number">1</span>) <span class="py-src-variable">for</span> <span class="py-src-variable">_</span> <span class="py-src-variable">in</span> <span class="py-src-variable">range</span>(<span class="py-src-number">5</span>) ], 
+    <span class="py-src-string">&quot;color&quot;</span>: <span class="py-src-fstring_start">f&quot;</span>{<span class="py-src-variable">random</span>.<span class="py-src-variable">choice</span>(<span class="py-src-variable">colors</span>)}<span class="py-src-fstring_middle">_</span>{<span class="py-src-variable">str</span>(<span class="py-src-variable">random</span>.<span class="py-src-variable">randint</span>(<span class="py-src-number">1000</span>, <span class="py-src-number">9999</span>))}<span class="py-src-fstring_end">&quot;</span> 
+} <span class="py-src-variable">for</span> <span class="py-src-variable">i</span> <span class="py-src-variable">in</span> <span class="py-src-variable">range</span>(<span class="py-src-number">1000</span>) ]
+
+<span class="py-src-variable">res</span> = <span class="py-src-variable">client</span>.<span class="py-src-variable">insert</span>(
+    <span class="py-src-variable">collection_name</span>=<span class="py-src-string">&quot;quick_setup&quot;</span>,
+    <span class="py-src-variable">data</span>=<span class="py-src-variable">data</span>[<span class="py-src-number">10</span>:]
+)
+
+<span class="py-src-variable">print</span>(<span class="py-src-variable">res</span>)
+
+
+<span class="py-src-variable">query_vectors</span> = [
+    [<span class="py-src-number">0.041732933</span>, <span class="py-src-number">0.013779674</span>, -<span class="py-src-number">0.027564144</span>, -<span class="py-src-number">0.013061441</span>, <span class="py-src-number">0.009748648</span>]
+]
+
+<span class="py-src-variable">res</span> = <span class="py-src-variable">client</span>.<span class="py-src-variable">search</span>(
+    <span class="py-src-variable">collection_name</span>=<span class="py-src-string">&quot;quick_setup&quot;</span>,     <span class="py-src-comment"># target collection</span>
+    <span class="py-src-variable">data</span>=<span class="py-src-variable">query_vectors</span>,                <span class="py-src-comment"># query vectors</span>
+    <span class="py-src-variable">limit</span>=<span class="py-src-number">3</span>,                           <span class="py-src-comment"># number of returned entities</span>
+)
+
+<span class="py-src-variable">print</span>(<span class="py-src-variable">res</span>)
+</pre>
+</body>

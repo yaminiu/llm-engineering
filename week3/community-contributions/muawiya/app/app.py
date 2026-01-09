@@ -2,9 +2,9 @@ import os
 import requests
 from IPython.display import Markdown, display, update_display
 from openai import OpenAI
-from google.colab import drive
+# from google.colab import drive
 from huggingface_hub import login
-from google.colab import userdata
+# userdatafrom google.colab import 
 from transformers import AutoTokenizer, AutoModelForCausalLM, TextStreamer, BitsAndBytesConfig, pipeline, TextGenerationPipeline
 import torch
 from consts import FALCON, MISTRAL, Databricks
@@ -47,7 +47,7 @@ def load_model_and_tokenizer():
 
   model = AutoModelForCausalLM.from_pretrained(
   MISTRAL,
-  device_map={"": "cuda"},
+  device_map={"": "cpu"},
   trust_remote_code=True,
   offload_folder="/tmp/dolly_offload",
   quantization_config=bnb_config

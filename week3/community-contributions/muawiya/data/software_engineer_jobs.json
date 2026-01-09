@@ -1,71 +1,68 @@
 [
   {
     "title": "Software Engineer",
-    "description": "We are seeking a highly skilled software engineer to join our team in developing and maintaining complex software systems. The ideal candidate will have a strong background in computer science and experience with multiple programming languages. Responsibilities include writing clean and efficient code, collaborating with cross-functional teams, and actively participating in code reviews. This is an excellent opportunity for a self-starter with a passion for technology and a desire to grow in their career.",
+    "description": "We are looking for a talented software engineer to join our team and help build the next generation of our product. As a software engineer at our company, you will work closely with our product team to design, develop, and maintain our software applications. You will have the opportunity to work on a variety of projects and technologies, and will be encouraged to take on new challenges and learn new skills. Responsibilities include writing clean, maintainable, and testable code, collaborating with cross-functional teams, and actively participating in code reviews. Requirements include a Bachelor's degree in Computer Science or a related field, 2-3 years of experience as a software engineer, strong problem-solving skills, and a passion for software development. This is a full-time position located in San Francisco, CA.",
     "requirements": [
-      "Bachelor's degree in Computer Science or related field",
-      "3+ years of experience in software development",
-      "Strong proficiency in Java or C++",
-      "Experience with agile development methodologies",
-      "Excellent problem-solving and analytical skills"
-    ],
-    "location": "New York, NY",
-    "company_name": "ABC Technologies"
-  },
-  {
-    "title": "Software Engineer",
-    "description": "We are looking for a highly skilled software engineer to join our team and contribute to the development of innovative software solutions. The ideal candidate will have experience in designing, developing, and testing software systems, and be able to work independently or as part of a team. Responsibilities include writing clean and efficient code, collaborating with cross-functional teams, and actively participating in code reviews. Must have a strong understanding of computer science principles and be able to learn quickly. This is a full-time position located in San Francisco, CA.",
-    "requirements": [
-      "Bachelor's degree in Computer Science or related field",
-      "3+ years of experience in software development",
-      "Strong proficiency in Java or C++",
-      "Experience with agile development methodologies",
-      "Excellent problem-solving skills",
-      "Ability to work in a fast-paced environment"
+      "Bachelor's degree in Computer Science or a related field",
+      "2-3 years of experience as a software engineer",
+      "strong problem-solving skills",
+      "passion for software development"
     ],
     "location": "San Francisco, CA",
     "company_name": "Acme Inc."
   },
   {
     "title": "Software Engineer",
-    "description": "We are seeking a highly skilled software engineer to join our team in developing and maintaining our cutting-edge software applications. The ideal candidate will have a strong background in computer science and software engineering, with experience in designing, coding, and testing software systems. Responsibilities include collaborating with cross-functional teams, writing clean and efficient code, and ensuring the timely delivery of high-quality software products. This is an excellent opportunity for a self-starter with a passion for technology and a desire to work in a dynamic and fast-paced environment.",
+    "description": "We are looking for a talented software engineer to join our team and contribute to the development of innovative software solutions. The ideal candidate will have a strong background in computer science and experience with various programming languages and technologies. Responsibilities include designing, coding, testing and maintaining software systems, collaborating with cross-functional teams and continuously learning and improving technical skills. This is an excellent opportunity for a self-starter with a passion for technology and a desire to grow in their career.",
     "requirements": [
       "Bachelor's degree in Computer Science or related field",
-      "3+ years of experience in software engineering",
-      "Strong proficiency in Java, Python, or C++",
-      "Experience with agile development methodologies",
-      "Excellent problem-solving and analytical skills",
-      "Strong communication and interpersonal skills"
+      "Minimum of 2 years experience in software development",
+      "Strong proficiency in Java, Python or C++",
+      "Experience with agile methodologies and version control systems",
+      "Good understanding of data structures and algorithms",
+      "Excellent problem-solving and analytical skills"
     ],
-    "location": "New York, NY",
+    "location": "New York",
     "company_name": "ABC Tech"
   },
   {
     "title": "Software Engineer",
-    "description": "We are seeking a highly skilled software engineer to join our team and contribute to the development of innovative software solutions. The ideal candidate will have a strong background in computer science and experience with various programming languages and technologies. Responsibilities include designing, coding, testing, and maintaining software systems, as well as collaborating with cross-functional teams. This is an excellent opportunity for a creative and motivated individual to make a significant impact in the tech industry.",
+    "description": "We are seeking a highly skilled software engineer to join our team in developing and maintaining complex software systems. The ideal candidate will have experience in programming languages such as Java, Python, and C++, and will be able to work collaboratively with other team members. Responsibilities include writing clean and efficient code, testing and debugging software, and participating in code reviews. This is a full-time position located in San Francisco, CA.",
     "requirements": [
       "Bachelor's degree in Computer Science or related field",
-      "Minimum of 2 years experience in software development",
-      "Strong proficiency in Java, Python, or C++",
-      "Experience with agile development methodologies",
-      "Excellent problem-solving and analytical skills",
+      "3+ years of experience in software engineering",
+      "Proficiency in Java, Python, and C++",
+      "Strong problem-solving skills",
       "Ability to work independently and as part of a team",
-      "Strong communication and interpersonal skills"
+      "Excellent communication and interpersonal skills"
     ],
-    "location": "New York, NY",
-    "company_name": "ABC Tech Inc."
+    "location": "San Francisco, CA",
+    "company_name": "ABC Tech"
   },
   {
     "title": "Software Engineer",
-    "description": "We are looking for a skilled software engineer to join our team and contribute to the development of innovative software solutions. Responsibilities include designing, coding, testing and maintaining software systems, as well as collaborating with cross-functional teams. The ideal candidate will have a strong background in computer science or a related field, and at least 3 years of experience in software development. Must be proficient in multiple programming languages, including Java, Python, and C++. Strong problem-solving skills and the ability to work independently or as part of a team are required. This is a full-time position located in San Francisco, CA.",
+    "description": "We are seeking a highly skilled software engineer to join our team in developing and maintaining complex software systems. The ideal candidate will have experience in multiple programming languages and a strong understanding of software design patterns. Responsibilities include writing clean and efficient code, collaborating with cross-functional teams, and actively participating in code reviews. This is a full-time position located in San Francisco, CA.",
     "requirements": [
       "Bachelor's degree in Computer Science or related field",
-      "At least 3 years of experience in software development",
-      "Proficiency in Java, Python, and C++",
-      "Strong problem-solving skills",
-      "Ability to work independently or as part of a team"
+      "5+ years of experience in software development",
+      "Strong proficiency in Java, Python, or C++",
+      "Experience with agile development methodologies",
+      "Excellent problem-solving and communication skills"
     ],
     "location": "San Francisco, CA",
-    "company_name": "Innovative Solutions Inc."
+    "company_name": "Acme Inc."
+  },
+  {
+    "title": "Software Engineer",
+    "description": "We are looking for a highly skilled software engineer to join our team in developing and maintaining our software applications. The ideal candidate will have experience in programming languages such as Java, Python, and C++, and will be able to work independently or as part of a team. Responsibilities include writing clean, efficient, and testable code, collaborating with other engineers and product teams, and continuously improving the quality of our software. This is a full-time position located in San Francisco, CA.",
+    "requirements": [
+      "Bachelor's degree in Computer Science or related field",
+      "3+ years of experience in software development",
+      "Strong proficiency in Java, Python, and C++",
+      "Experience with agile development methodologies",
+      "Excellent problem-solving and communication skills"
+    ],
+    "location": "San Francisco, CA",
+    "company_name": "Acme Inc."
   }
 ]

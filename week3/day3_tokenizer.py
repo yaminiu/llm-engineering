@@ -48,4 +48,3 @@ print("Model max length:", tokenizer.model_max_length)
 # print("Added vocabulary:", tokenizer.get_added_vocab())
 # special tokens added to the model
 print(len(tokenizer.all_special_tokens), "special tokens:", tokenizer.all_special_tokens)
-

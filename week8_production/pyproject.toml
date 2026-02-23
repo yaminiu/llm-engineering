@@ -1,0 +1,112 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools-scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "price-intelligence"
+version = "1.0.0"
+description = "Production-ready LLM-based pricing service using fine-tuned Llama models"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "LLM Engineering", email = "contact@llm-eng.com"}
+]
+requires-python = ">=3.10"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "torch>=2.0.0",
+    "transformers>=4.30.0",
+    "peft>=0.4.0",
+    "bitsandbytes>=0.40.0",
+    "accelerate>=0.20.0",
+    "python-dotenv>=1.0.0",
+    "numpy>=1.24.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-asyncio>=0.20.0",
+    "black>=23.0.0",
+    "ruff>=0.0.250",
+    "mypy>=1.0.0",
+    "sphinx>=6.0.0",
+]
+modal = [
+    "modal>=0.40.0",
+]
+ui = [
+    "gradio>=3.30.0",
+    "plotly>=5.0.0",
+]
+chromadb = [
+    "chromadb>=0.3.21",
+    "sentence-transformers>=2.2.0",
+    "scikit-learn>=1.3.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-org/price-intelligence"
+Documentation = "https://github.com/your-org/price-intelligence/docs"
+Repository = "https://github.com/your-org/price-intelligence.git"
+Issues = "https://github.com/your-org/price-intelligence/issues"
+
+[tool.setuptools]
+packages = ["price_intelligence"]
+package-dir = {"" = "src"}
+
+[tool.setuptools.package-data]
+price_intelligence = ["py.typed"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-v --cov=price_intelligence --cov-report=html --cov-report=term-missing"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.coverage.run]
+source = ["price_intelligence"]
+omit = ["*/__init__.py", "*/version.py"]
+
+[tool.black]
+line-length = 100
+target-version = ['py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true

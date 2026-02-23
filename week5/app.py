@@ -1,7 +1,7 @@
 import gradio as gr
 from dotenv import load_dotenv
 
-from implementation.answer import answer_question
+from pro_implementation.answer import answer_question
 
 load_dotenv(override=True)
 
@@ -34,8 +34,7 @@ def main():
         with gr.Row():
             with gr.Column(scale=1):
                 chatbot = gr.Chatbot(
-                    label="💬 Conversation", height=600, type="messages", show_copy_button=True
-                )
+                    label="💬 Conversation", height=600)
                 message = gr.Textbox(
                     label="Your Question",
                     placeholder="Ask anything about Insurellm...",

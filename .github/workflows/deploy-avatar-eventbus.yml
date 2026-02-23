@@ -1,0 +1,37 @@
+name: Deploy Avatar Eventbus
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Kubernetes credentials
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+          azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          azure_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure_client_secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          azure_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+
+      - name: Deploy with Helm
+        uses: deliverybot/helm@v1
+        with:
+          chart: ./avatar-eventbus
+          release: avatar-eventbus
+          namespace: default
+          values: ./avatar-eventbus/values.yaml
+          install: true
+          wait: true
+          timeout: 600s
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
